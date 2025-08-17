@@ -1,0 +1,170 @@
+﻿@model DynamicConfiguration.WebUI.Models.ConfigurationViewModel
+
+@{
+    ViewData["Title"] = "Konfigürasyon Sil";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-trash me-2"></i>Konfigürasyonu Sil
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Dikkat!</strong> Bu işlem geri alınamaz ve aşağıdaki konfigürasyon kalıcı olarak silinecektir.
+                    </div>
+
+                    <!-- Konfigürasyon Detayları -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted text-uppercase fw-bold">
+                                    <i class="fas fa-tag me-1"></i>Konfigürasyon İsmi
+                                </h6>
+                                <h5 class="fw-bold text-danger">@Model.Name</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted text-uppercase fw-bold">
+                                    <i class="fas fa-code me-1"></i>Veri Tipi
+                                </h6>
+                                <span class="badge bg-info fs-6">@Model.Type</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted text-uppercase fw-bold">
+                                    <i class="fas fa-desktop me-1"></i>Uygulama İsmi
+                                </h6>
+                                <span class="badge bg-secondary fs-6">@Model.ApplicationName</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted text-uppercase fw-bold">
+                                    <i class="fas fa-toggle-on me-1"></i>Durum
+                                </h6>
+                                @if (Model.IsActive)
+                                {
+                                    <span class="badge bg-success fs-6">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger fs-6">Pasif</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <h6 class="text-muted text-uppercase fw-bold">
+                                    <i class="fas fa-edit me-1"></i>Değer
+                                </h6>
+                                <code class="bg-light p-3 border rounded d-block">@Model.Value</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Uyarı Mesajları -->
+                    <div class="alert alert-danger" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-exclamation-circle me-2"></i>Bu işlemin etkileri:
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Bu konfigürasyon kalıcı olarak silinecektir</li>
+                            <li>@Model.ApplicationName uygulaması artık bu değeri alamayacaktır</li>
+                            <li>Bağlı tüm uygulamalarda hemen etkili olacaktır</li>
+                            <li>Bu işlem geri alınamaz</li>
+                        </ul>
+                    </div>
+
+                    <!-- Silme Formu -->
+                    <form asp-action="DeleteConfirmed" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>İptal Et - Listeye Dön
+                                </a>
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                                    <i class="fas fa-eye me-1"></i>Detay Görüntüle
+                                </a>
+                            </div>
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-trash me-2"></i>Konfigürasyonu Sil
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Alternatif İşlemler -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Alternatif İşlemler
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">
+                        Konfigürasyonu silmek yerine aşağıdaki seçenekleri de değerlendirebilirsiniz:
+                    </p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-toggle-off text-warning me-3 fs-4"></i>
+                                <div>
+                                    <h6 class="mb-1">Pasif Hale Getir</h6>
+                                    <small class="text-muted">Konfigürasyonu silmek yerine pasif yapabilirsiniz</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-edit text-primary me-3 fs-4"></i>
+                                <div>
+                                    <h6 class="mb-1">Değeri Değiştir</h6>
+                                    <small class="text-muted">Konfigürasyonu düzenleyerek değerini güncelleyebilirsiniz</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2">
+                            <i class="fas fa-edit me-1"></i>Konfigürasyonu Düzenle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Form submit confirmation
+            $('form[asp-action="DeleteConfirmed"]').on('submit', function(e) {
+                const confirmation = confirm(
+                    'Bu konfigürasyonu silmek istediğinizden emin misiniz?\n\n' +
+                    'Bu işlem geri alınamaz ve tüm bağlı uygulamaları etkileyecektir.'
+                );
+
+                if (!confirmation) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}

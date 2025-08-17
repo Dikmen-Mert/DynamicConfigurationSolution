@@ -1,0 +1,383 @@
+﻿@model DynamicConfiguration.WebUI.Models.ConfigurationViewModel
+
+@{
+    ViewData["Title"] = "Konfigürasyon Detayı";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="card-title mb-0">
+                            <i class="fas fa-eye me-2"></i>Konfigürasyon Detayı
+                        </h4>
+                        <small class="text-muted">ID: @Model.Id</small>
+                    </div>
+                    <div>
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success fs-6">Aktif</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger fs-6">Pasif</span>
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Success/Error Messages -->
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-1"></i>@TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-1"></i>@TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-muted text-uppercase fw-bold">
+                                    <i class="fas fa-tag me-1"></i>Konfigürasyon İsmi
+                                </h6>
+                                <h5 class="fw-bold">@Model.Name</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-muted text-uppercase fw-bold">
+                                    <i class="fas fa-code me-1"></i>Veri Tipi
+                                </h6>
+                                <span class="badge bg-info fs-6">@Model.Type</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-muted text-uppercase fw-bold">
+                                    <i class="fas fa-desktop me-1"></i>Uygulama İsmi
+                                </h6>
+                                <span class="badge bg-secondary fs-6">@Model.ApplicationName</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-muted text-uppercase fw-bold">
+                                    <i class="fas fa-toggle-on me-1"></i>Durum
+                                </h6>
+                                @if (Model.IsActive)
+                                {
+                                    <span class="text-success fw-bold">
+                                        <i class="fas fa-check-circle me-1"></i>Aktif - Uygulamalar tarafından erişilebilir
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger fw-bold">
+                                        <i class="fas fa-times-circle me-1"></i>Pasif - Uygulamalar tarafından erişilemez
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-muted text-uppercase fw-bold">
+                                    <i class="fas fa-calendar me-1"></i>Oluşturulma Tarihi
+                                </h6>
+                                <span class="text-muted">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-muted text-uppercase fw-bold">
+                                    <i class="fas fa-clock me-1"></i>Son Güncelleme
+                                </h6>
+                                <span class="text-muted">@Model.UpdatedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-4">
+                                <h6 class="text-muted text-uppercase fw-bold">
+                                    <i class="fas fa-edit me-1"></i>Konfigürasyon Değeri
+                                </h6>
+                                <div class="d-flex align-items-center">
+                                    <code class="bg-light p-3 border rounded flex-grow-1 me-2" id="configValue">@Model.Value</code>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="copyBtn" title="Panoya kopyala">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kullanım Bilgileri Kartı -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-code me-2"></i>Kullanım Örnekleri
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="fw-bold">C# Kullanım Örneği:</h6>
+                            @{
+                                string variableName = !string.IsNullOrEmpty(Model.Name) && Model.Name.Length > 0
+                                ? char.ToLower(Model.Name[0]) + Model.Name.Substring(1)
+                                : "configValue";
+                            }
+                            <pre class="bg-light p-3 border rounded" id="codeExample"><code>// Konfigürasyon okuyucuyu başlat
+var configReader = new ConfigurationReader(
+    "@Model.ApplicationName", 
+    connectionString, 
+    refreshInterval);
+
+// Değeri al
+@switch (Model.Type?.ToLower())
+{
+        case "string":
+                                    <text>string @variableName = configReader.GetValue&lt;string&gt;("@Model.Name");</text>
+                break;
+        case "int":
+                                    <text>int @variableName = configReader.GetValue&lt;int&gt;("@Model.Name");</text>
+                break;
+        case "bool":
+                                    <text>bool @variableName = configReader.GetValue&lt;bool&gt;("@Model.Name");</text>
+                break;
+        case "double":
+                                    <text>double @variableName = configReader.GetValue&lt;double&gt;("@Model.Name");</text>
+                break;
+        case "decimal":
+                                    <text>decimal @variableName = configReader.GetValue&lt;decimal&gt;("@Model.Name");</text>
+                break;
+        case "datetime":
+                                    <text>DateTime @variableName = configReader.GetValue&lt;DateTime&gt;("@Model.Name");</text>
+                break;
+        default:
+                                    <text>var @variableName = configReader.GetValue&lt;@Model.Type&gt;("@Model.Name");</text>
+                break;
+}
+</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Beklenen Dönüş Değeri:</h6>
+                            <div class="bg-success bg-opacity-10 p-3 border border-success rounded">
+                                <code class="text-success fw-bold">
+                                    @{
+                                        string displayValue = "";
+                                        switch (Model.Type?.ToLower())
+                                        {
+                                            case "string":
+                                                displayValue = $"\"{Model.Value}\"";
+                                                break;
+                                            case "bool":
+                                                bool boolValue = false;
+                                                if (!string.IsNullOrEmpty(Model.Value))
+                                                {
+                                                    boolValue = Model.Value.ToLower() == "true" || Model.Value == "1";
+                                                }
+                                                displayValue = boolValue ? "true" : "false";
+                                                break;
+                                            case "int":
+                                            case "double":
+                                            case "decimal":
+                                                displayValue = Model.Value;
+                                                break;
+                                            case "datetime":
+                                                if (DateTime.TryParse(Model.Value, out DateTime dateValue))
+                                                {
+                                                    displayValue = dateValue.ToString("yyyy-MM-dd HH:mm:ss");
+                                                }
+                                                else
+                                                {
+                                                    displayValue = Model.Value;
+                                                }
+                                                break;
+                                            default:
+                                                displayValue = Model.Value;
+                                                break;
+                                        }
+                                    }
+                                    @displayValue
+                                </code>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Konfigürasyon Bilgileri:</h6>
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item d-flex align-items-center bg-transparent px-0">
+                                    <i class="fas fa-server text-primary me-3"></i>
+                                    <span>Uygulama: <strong>@Model.ApplicationName</strong></span>
+                                </div>
+                                <div class="list-group-item d-flex align-items-center bg-transparent px-0">
+                                    <i class="fas fa-database text-success me-3"></i>
+                                    <span>Tip: <strong>@DynamicConfiguration.WebUI.Models.ConfigurationTypes.Types.GetValueOrDefault(Model.Type, Model.Type)</strong></span>
+                                </div>
+                                <div class="list-group-item d-flex align-items-center bg-transparent px-0">
+                                    <i class="fas fa-sync-alt text-info me-3"></i>
+                                    <span>Otomatik yenilenme aktif</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Bilgi:</strong> Bu konfigürasyon, bağlı uygulamalarda otomatik olarak
+                                yenilenme süresine göre güncellenir. Değişiklikler uygulama yeniden başlatılmadan algılanır.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- İşlemler Kartı -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 fw-bold">Konfigürasyonu Yönet</h6>
+                            <small class="text-muted">Düzenle, sil veya listeye geri dön</small>
+                        </div>
+                        <div class="btn-group" role="group" aria-label="Konfigürasyon İşlemleri">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                                <i class="fas fa-edit me-1"></i>Düzenle
+                            </a>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="fas fa-trash me-1"></i>Sil
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-list me-1"></i>Listeye Dön
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Silme Onay Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Silme Onayı
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Uyarı!</strong> Bu işlem geri alınamaz.
+                </div>
+                <p>Aşağıdaki konfigürasyonu silmek istediğinizden emin misiniz?</p>
+                <div class="text-center p-3 bg-light rounded">
+                    <strong>@Model.Name</strong>
+                    <span class="text-muted">(@Model.ApplicationName)</span>
+                </div>
+                <p class="mt-3 text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Bu işlem, bu konfigürasyonu kullanan tüm uygulamaları hemen etkileyecektir.
+                    Uygulamalar artık bu değeri alamayacaktır.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>İptal
+                </button>
+                <form asp-action="DeleteConfirmed" method="post" class="d-inline">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Konfigürasyonu Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Panoya kopyalama işlevi
+            $('#copyBtn').click(function () {
+                const valueElement = document.getElementById('configValue');
+                const value = valueElement ? valueElement.textContent : '';
+
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(value).then(function() {
+                        showCopySuccess();
+                    }, function(err) {
+                        console.error('Clipboard API hatası:', err);
+                        fallbackCopyTextToClipboard(value);
+                    });
+                } else {
+                    fallbackCopyTextToClipboard(value);
+                }
+            });
+
+            function fallbackCopyTextToClipboard(text) {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        showCopySuccess();
+                    } else {
+                        console.error('execCommand copy başarısız');
+                    }
+                } catch (err) {
+                    console.error('Kopyalama hatası:', err);
+                }
+
+                document.body.removeChild(textArea);
+            }
+
+            function showCopySuccess() {
+                const $btn = $('#copyBtn');
+                const originalHtml = $btn.html();
+
+                $btn.html('<i class="fas fa-check"></i> Kopyalandı!');
+                $btn.removeClass('btn-outline-secondary').addClass('btn-success');
+
+                setTimeout(function () {
+                    $btn.html(originalHtml);
+                    $btn.removeClass('btn-success').addClass('btn-outline-secondary');
+                }, 2000);
+            }
+        });
+    </script>
+}

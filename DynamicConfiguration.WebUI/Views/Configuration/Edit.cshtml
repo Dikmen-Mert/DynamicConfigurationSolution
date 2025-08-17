@@ -1,0 +1,254 @@
+﻿@model DynamicConfiguration.WebUI.Models.ConfigurationViewModel
+
+@{
+    ViewData["Title"] = "Konfigürasyon Düzenle";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-edit me-2"></i>Konfigürasyon Düzenle
+                    </h4>
+                    <small class="text-muted">ID: @Model.Id</small>
+                </div>
+                <div class="card-body">
+                    <!-- Success/Error Messages -->
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-1"></i>@TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-1"></i>@TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Edit" method="post" id="editForm">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Name" class="form-label">
+                                        <i class="fas fa-tag me-1"></i>Konfigürasyon İsmi
+                                    </label>
+                                    <input asp-for="Name" class="form-control"
+                                           placeholder="Örn: SiteName, MaxItemCount" />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Type" class="form-label">
+                                        <i class="fas fa-code me-1"></i>Veri Tipi
+                                    </label>
+                                    <select asp-for="Type" class="form-select" id="typeSelect">
+                                        <option value="">-- Tip Seçin --</option>
+                                        <option value="string">String</option>
+                                        <option value="int">Integer</option>
+                                        <option value="bool">Boolean</option>
+                                        <option value="double">Double</option>
+                                    </select>
+                                    <span asp-validation-for="Type" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Value" class="form-label">
+                                        <i class="fas fa-edit me-1"></i>Değer
+                                    </label>
+                                    <div id="valueInputContainer">
+                                        <!-- JavaScript tarafından doldurulacak -->
+                                    </div>
+                                    <span asp-validation-for="Value" class="text-danger"></span>
+                                    <small class="form-text text-muted" id="valueHint">
+                                        Konfigürasyon değerini girin.
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="ApplicationName" class="form-label">
+                                        <i class="fas fa-desktop me-1"></i>Uygulama İsmi
+                                    </label>
+                                    <input asp-for="ApplicationName" class="form-control"
+                                           placeholder="Örn: SERVICE-A, SERVICE-B" />
+                                    <span asp-validation-for="ApplicationName" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input asp-for="IsActive" class="form-check-input" type="checkbox"
+                                               id="isActiveSwitch" />
+                                        <label asp-for="IsActive" class="form-check-label" for="isActiveSwitch">
+                                            <i class="fas fa-toggle-on me-1"></i>Aktif
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        Sadece aktif konfigürasyonlar uygulamalar tarafından okunabilir.
+                                    </small>
+                                    <span asp-validation-for="IsActive" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <a asp-action="Index" class="btn btn-secondary">
+                                            <i class="fas fa-arrow-left me-1"></i>Geri Dön
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                                            <i class="fas fa-eye me-1"></i>Detay Görüntüle
+                                        </a>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-save me-1"></i>Değişiklikleri Kaydet
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Uyarı Kartı -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="alert alert-warning mb-0" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Dikkat:</strong> Bu konfigürasyonda yapılan değişiklikler,
+                        bağlı uygulamalarda otomatik olarak yenilenme süresine göre güncellenir.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function () {
+            const initialValue = '@Html.Raw(Model.Value)';
+            const initialType = '@Model.Type';
+
+            function updateValueInput() {
+                const selectedType = $('#typeSelect').val();
+                const $container = $('#valueInputContainer');
+                const currentValue = selectedType === initialType ? initialValue : '';
+
+                $container.empty();
+
+                switch (selectedType) {
+                    case 'bool':
+                        $container.html(`
+                            <select name="Value" id="valueInput" class="form-select">
+                                <option value="">-- Değer Seçin --</option>
+                                <option value="true" ${currentValue === 'true' || currentValue === '1' ? 'selected' : ''}>True</option>
+                                <option value="false" ${currentValue === 'false' || currentValue === '0' ? 'selected' : ''}>False</option>
+                            </select>
+                        `);
+                        $('#valueHint').text('True veya False seçin.');
+                        break;
+                    case 'int':
+                        $container.html(`
+                            <input name="Value" id="valueInput" type="number" step="1" class="form-select"
+                                   value="${currentValue}" placeholder="Tam sayı değer girin" />
+                        `);
+                        $('#valueHint').text('Tam sayı değer girin (Örn: 10, 50, 100).');
+                        break;
+                    case 'double':
+                        $container.html(`
+                            <input name="Value" id="valueInput" type="number" step="0.01" class="form-control"
+                                   value="${currentValue}" placeholder="Ondalık sayı değer girin" />
+                        `);
+                        $('#valueHint').text('Ondalık sayı değer girin (Örn: 10.5, 99.99).');
+                        break;
+                    case 'string':
+                    default:
+                        $container.html(`
+                            <input name="Value" id="valueInput" type="text" class="form-control"
+                                   value="${currentValue}" placeholder="Metin değer girin" />
+                        `);
+                        $('#valueHint').text('Herhangi bir metin değer girin.');
+                        break;
+                }
+            }
+
+            $('#typeSelect').change(function () {
+                updateValueInput();
+            });
+
+            updateValueInput();
+
+            let hasChanges = false;
+            $('#editForm input, #editForm select').on('change', function() {
+                hasChanges = true;
+            });
+
+            window.addEventListener('beforeunload', function (e) {
+                if (hasChanges) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+
+            $('#editForm').submit(function(e) {
+                hasChanges = false;
+
+                let isValid = true;
+                const errorMessages = [];
+
+                if (!$('#Name').val().trim()) {
+                    errorMessages.push('Konfigürasyon ismi gereklidir.');
+                    isValid = false;
+                }
+
+                if (!$('#typeSelect').val()) {
+                    errorMessages.push('Veri tipi seçilmelidir.');
+                    isValid = false;
+                }
+
+                const value = $('#valueInput').val();
+                const type = $('#typeSelect').val();
+
+                if (!value && type !== 'bool') {
+                    errorMessages.push('Değer gereklidir.');
+                    isValid = false;
+                }
+
+                if (!$('#ApplicationName').val().trim()) {
+                    errorMessages.push('Uygulama ismi gereklidir.');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Lütfen aşağıdaki hataları düzeltin:\n\n' + errorMessages.join('\n'));
+                }
+            });
+        });
+    </script>
+}

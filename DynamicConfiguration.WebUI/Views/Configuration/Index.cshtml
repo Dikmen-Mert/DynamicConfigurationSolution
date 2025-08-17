@@ -1,0 +1,227 @@
+﻿@model DynamicConfiguration.WebUI.Models.ConfigurationListViewModel
+@{
+    ViewData["Title"] = "Konfigürasyon Yönetimi";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>Konfigürasyon Yönetimi
+                    </h3>
+                    <a asp-action="Create" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>Yeni Konfigürasyon
+                    </a>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Success/Error Messages -->
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-1"></i>@TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-1"></i>@TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <!-- Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" id="filterName" 
+                                       placeholder="Konfigürasyon ismi ile ara..." 
+                                       value="@Model.FilterName">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="filterApplication">
+                                <option value="">Tüm Uygulamalar</option>
+                                @foreach (var app in Model.Applications)
+                                {
+                                    <option value="@app" selected="@(app == Model.FilterApplication)">@app</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-secondary w-100" id="clearFilters">
+                                <i class="fas fa-times"></i> Temizle
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Configurations Table -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="configurationsTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th><i class="fas fa-tag me-1"></i>İsim</th>
+                                    <th><i class="fas fa-code me-1"></i>Tip</th>
+                                    <th><i class="fas fa-edit me-1"></i>Değer</th>
+                                    <th><i class="fas fa-toggle-on me-1"></i>Durum</th>
+                                    <th><i class="fas fa-desktop me-1"></i>Uygulama</th>
+                                    <th><i class="fas fa-calendar me-1"></i>Güncelleme</th>
+                                    <th><i class="fas fa-tools me-1"></i>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="configurationsTableBody">
+                                @foreach (var config in Model.Configurations)
+                                {
+                                    <tr>
+                                        <td><strong>@config.Name</strong></td>
+                                        <td>
+                                            <span class="badge bg-info">@config.Type</span>
+                                        </td>
+                                        <td>
+                                            <code class="text-primary">@(config.Value.Length > 30 ? config.Value.Substring(0, 30) + "..." : config.Value)</code>
+                                        </td>
+                                        <td>
+                                            @if (config.IsActive)
+                                            {
+                                                <span class="badge bg-success">Aktif</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">Pasif</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">@config.ApplicationName</span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">@config.UpdatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a asp-action="Details" asp-route-id="@config.Id" 
+                                                   class="btn btn-outline-info" title="Detay">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@config.Id" 
+                                                   class="btn btn-outline-warning" title="Düzenle">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@config.Id" 
+                                                   class="btn btn-outline-danger" title="Sil">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (!Model.Configurations.Any())
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Konfigürasyon bulunamadı</h5>
+                            <p class="text-muted">Yeni konfigürasyon eklemek için yukarıdaki butonu kullanabilirsiniz.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Real-time filtering
+            $('#filterName, #filterApplication').on('input change', function() {
+                filterConfigurations();
+            });
+
+            $('#clearFilters').click(function() {
+                $('#filterName').val('');
+                $('#filterApplication').val('');
+                filterConfigurations();
+            });
+
+            function filterConfigurations() {
+                const filterName = $('#filterName').val();
+                const filterApplication = $('#filterApplication').val();
+
+                $.ajax({
+                    url: '@Url.Action("GetFilteredConfigurations")',
+                    type: 'GET',
+                    data: {
+                        filterName: filterName,
+                        filterApplication: filterApplication
+                    },
+                    success: function(data) {
+                        updateTable(data);
+                    },
+                    error: function() {
+                        console.error('Filtreleme sırasında hata oluştu');
+                    }
+                });
+            }
+
+            function updateTable(configurations) {
+                const tbody = $('#configurationsTableBody');
+                tbody.empty();
+
+                if (configurations.length === 0) {
+                    tbody.append(`
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="fas fa-info-circle fa-2x text-muted mb-2"></i>
+                                <p class="text-muted">Filtreye uygun konfigürasyon bulunamadı</p>
+                            </td>
+                        </tr>
+                    `);
+                    return;
+                }
+
+                configurations.forEach(function(config) {
+                    const statusBadge = config.isActive 
+                        ? '<span class="badge bg-success">Aktif</span>'
+                        : '<span class="badge bg-danger">Pasif</span>';
+                    
+                    const displayValue = config.value.length > 30 
+                        ? config.value.substring(0, 30) + '...' 
+                        : config.value;
+
+                    const updateDate = new Date(config.updatedAt).toLocaleString('tr-TR');
+
+                    tbody.append(`
+                        <tr>
+                            <td><strong>${config.name}</strong></td>
+                            <td><span class="badge bg-info">${config.type}</span></td>
+                            <td><code class="text-primary">${displayValue}</code></td>
+                            <td>${statusBadge}</td>
+                            <td><span class="badge bg-secondary">${config.applicationName}</span></td>
+                            <td><small class="text-muted">${updateDate}</small></td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="/Configuration/Details/${config.id}" class="btn btn-outline-info" title="Detay">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/Configuration/Edit/${config.id}" class="btn btn-outline-warning" title="Düzenle">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="/Configuration/Delete/${config.id}" class="btn btn-outline-danger" title="Sil">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
+        });
+    </script>
+}
